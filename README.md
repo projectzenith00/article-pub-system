@@ -8,7 +8,7 @@
 6. Open your browser and go to http://localhost/phpmyadmin/
 7. Go to the SQL tab and paste the SQL codes below
 	
-	"CREATE DATABASE article_publishing_system;
+	CREATE DATABASE article_publishing_system;
 
 	USE article_publishing_system;
 
@@ -17,8 +17,8 @@
 	    image TEXT(255),
 	    title TEXT(255),
 	    date DATE,
-	    content MEDIUMTEXT(5000)
-	);"
+	    content MEDIUMTEXT
+	);
 	
 8. Click the Go button below to run the sql commands
 9. To access the site, open a new tab in your browser and enter "http://localhost/name -of-your-folder-in-htdocs/"
