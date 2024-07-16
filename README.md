@@ -12,7 +12,7 @@
 
 	USE article_publishing_system;
 
-	CREATE TABLE articles (
+	CREATE TABLE article (
 	    id INT AUTO_INCREMENT PRIMARY KEY,
 	    image TEXT(255),
 	    title TEXT(255),
@@ -22,4 +22,6 @@
 	
 8. Click the Go button below to run the sql commands
 9. To access the site, open a new tab in your browser and enter "http://localhost/name -of-your-folder-in-htdocs/"
-10. Make sure to replace the text "name -of-your-folder-in-htdocs" with the actual name of your in htdocs where you  extracted the files.
+10. Make sure to replace the text "name -of-your-folder-in-htdocs" with the actual name of your in htdocs where you  extracted the files
+11. Make to replace the database, username and password information in the config.php file
+12. Make sure to change the SMTP configuration in the send_email.php file with you own configuration
