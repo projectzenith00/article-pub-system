@@ -1,31 +1,52 @@
 <?php
+
+include 'config.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "article_publishing_system";
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+        $input_date = $_POST['date'];
+        $input_email = $_POST['email'];
+        $date = date('Y-m-d');
+        
+        $sql = "SELECT * FROM articles WHERE  date = '$input_date'";
+        $result = $conn->query($sql);
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-$date = date('Y-m-d');
-$sql = "SELECT * FROM articles WHERE date='$date'";
-$result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
     $articles = "";
     while($row = $result->fetch_assoc()) {
-        $articles .= '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        $articles .= "<h2>" . $row['title'] ."</h2><br/>";
+        $articles .= "<img src='https://intranet.sophi-outsourcing.com/git/uploads/'" . $row["image"]. "' width='560' style='display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic' height='314'><br/>";
+        $articles .= "<p>" . $row["content"] . "</p>";
+    }
+
+    $mail = new PHPMailer(true);
+
+    try {
+        //Server settings
+        $mail->isSMTP();
+        $mail->Host = 'bulk.smtp.mailtrap.io';  
+        $mail->SMTPAuth = true;
+        $mail->Username = 'api'; 
+        $mail->Password = '13ea0591b6d0254d76ad4e739cc8f721';
+        $mail->SMTPSecure = 'tls'; 
+        $mail->Port = 587; 
+
+        //Recipients
+        $mail->setFrom('contact@kentrogell.dev', 'Mailer');
+        $mail->addAddress($input_email, 'User'); 
+
+
+        $mail->isHTML(true); 
+        $mail->Subject = 'Published Articles for ' . $date;
+        $mail->Body    = 
+        '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="ltr" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="en" style="padding:0;Margin:0">
  <head>
   <meta charset="UTF-8">
@@ -88,7 +109,7 @@ a[x-apple-data-detectors] {
 @media screen and (max-width:384px) {.mail-message-content { width:414px!important } }
 </style>
  </head>
- <body style="width:100%;font-family:arial, "helvetica neue", helvetica, sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;padding:0;Margin:0">
+ <body style="width:100%;font-family:arial, helvetica neue, helvetica, sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;padding:0;Margin:0">
   <div dir="ltr" class="es-wrapper-color" lang="en" style="background-color:#F7F7F7"><!--[if gte mso 9]>
       <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
         <v:fill type="tile" color="#f7f7f7"></v:fill>
@@ -108,7 +129,7 @@ a[x-apple-data-detectors] {
                   <td valign="top" align="center" style="padding:0;Margin:0;width:580px">
                    <table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
                      <tr style="border-collapse:collapse">
-                      <td align="center" class="es-infoblock" style="padding:0;Margin:0;line-height:13px;font-size:11px;color:#999999"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;line-height:13px;color:#999999;font-size:11px">Put your preheader text here. <a href="https://viewstripo.email" class="view" target="_blank" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#3D5CA3;font-size:11px">View in browser</a></p></td>
+                      <td align="center" class="es-infoblock" style="padding:0;Margin:0;line-height:13px;font-size:11px;color:#999999"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, helvetica neue, helvetica, sans-serif;line-height:13px;color:#999999;font-size:11px"></p></td>
                      </tr>
                    </table></td>
                  </tr>
@@ -148,26 +169,13 @@ a[x-apple-data-detectors] {
                   <td valign="top" align="center" style="padding:0;Margin:0;width:560px">
                    <table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
                      <tr style="border-collapse:collapse">
-                      <td style="padding:0;Margin:0;position:relative" align="center"><img class="adapt-img" src="'.$row["image"].'"alt="Find the best popular courses" title="Find the best popular courses" width="560" style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic" height="314"></td>
-                     </tr>
-                   </table></td>
-                 </tr>
-               </table></td>
-             </tr>';
-        // $articles .= $row["image"] ;
-        $articles .= '<tr style="border-collapse:collapse">
-              <td align="left" style="Margin:0;padding-top:20px;padding-right:20px;padding-bottom:40px;padding-left:40px">
-               <table cellpadding="0" cellspacing="0" width="100%" role="none" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
-                 <tr style="border-collapse:collapse">
-                  <td align="center" valign="top" style="padding:0;Margin:0;width:540px">
-                   <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
-                     <tr style="border-collapse:collapse">
-                      <td align="center" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;line-height:21px;color:#333333;font-size:14px">'.$row["content"].'</p></td>
+                      <td style="padding:0;Margin:0;position:relative" align="center">'. $articles .'</td>
                      </tr>
                    </table></td>
                  </tr>
                </table></td>
              </tr>
+         
            </table></td>
          </tr>
        </table>
@@ -186,7 +194,7 @@ a[x-apple-data-detectors] {
                       <td align="center" style="padding:0;Margin:0;padding-bottom:5px;font-size:0"><img src="https://foefxli.stripocdn.email/content/guids/CABINET_66498ea076b5d00c6f9553055acdb37a/images/39911527588288171.png" alt style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic" width="24" height="24"></td>
                      </tr>
                      <tr style="border-collapse:collapse">
-                      <td align="center" style="padding:0;Margin:0;padding-left:5px;padding-right:5px"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;line-height:24px;color:#ffffff;font-size:16px">1513 Garfield Park Ave, Lebanon, OH 45036</p></td>
+                      <td align="center" style="padding:0;Margin:0;padding-left:5px;padding-right:5px"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, helvetica neue, helvetica, sans-serif;line-height:24px;color:#ffffff;font-size:16px">1513 Garfield Park Ave, Lebanon, OH 45036</p></td>
                      </tr>
                    </table></td>
                   <td class="es-hidden" style="padding:0;Margin:0;width:20px"></td>
@@ -200,7 +208,7 @@ a[x-apple-data-detectors] {
                       <td align="center" style="padding:0;Margin:0;padding-bottom:5px;font-size:0"><img src="https://foefxli.stripocdn.email/content/guids/CABINET_66498ea076b5d00c6f9553055acdb37a/images/35681527588356492.png" alt style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic" width="24" height="24"></td>
                      </tr>
                      <tr style="border-collapse:collapse">
-                      <td esdev-links-color="#ffffff" align="center" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;line-height:27px;color:#ffffff;font-size:14px"><a target="_blank" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#ffffff;font-size:18px" href="mailto:your@mail.com">your@mail.com</a></p></td>
+                      <td esdev-links-color="#ffffff" align="center" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, helvetica neue, helvetica, sans-serif;line-height:27px;color:#ffffff;font-size:14px"><a target="_blank" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#ffffff;font-size:18px" href="mailto:your@mail.com">your@mail.com</a></p></td>
                      </tr>
                    </table></td>
                  </tr>
@@ -213,7 +221,7 @@ a[x-apple-data-detectors] {
                       <td align="center" style="padding:0;Margin:0;padding-bottom:5px;font-size:0"><img src="https://foefxli.stripocdn.email/content/guids/CABINET_66498ea076b5d00c6f9553055acdb37a/images/50681527588357616.png" alt style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic" width="24" height="24"></td>
                      </tr>
                      <tr style="border-collapse:collapse">
-                      <td align="center" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;line-height:24px;color:#ffffff;font-size:16px"><a target="_blank" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#ffffff;font-size:16px" href="tel:123456789">123456789</a></p></td>
+                      <td align="center" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, helvetica neue, helvetica, sans-serif;line-height:24px;color:#ffffff;font-size:16px"><a target="_blank" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#ffffff;font-size:16px" href="tel:123456789">123456789</a></p></td>
                      </tr>
                    </table></td>
                  </tr>
@@ -234,7 +242,7 @@ a[x-apple-data-detectors] {
                   <td class="es-m-p0r es-m-p20b" valign="top" align="center" style="padding:0;Margin:0;width:190px">
                    <table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
                      <tr style="border-collapse:collapse">
-                      <td class="es-m-txt-c" esdev-links-color="#666666" align="right" style="padding:0;Margin:0;padding-top:5px"><h4 style="Margin:0;line-height:120%;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;color:#666666">Follow us:</h4></td>
+                      <td class="es-m-txt-c" esdev-links-color="#666666" align="right" style="padding:0;Margin:0;padding-top:5px"><h4 style="Margin:0;line-height:120%;mso-line-height-rule:exactly;font-family:arial, helvetica neue, helvetica, sans-serif;color:#666666">Follow us:</h4></td>
                      </tr>
                    </table></td>
                  </tr>
@@ -267,10 +275,7 @@ a[x-apple-data-detectors] {
                   <td valign="top" align="center" style="padding:0;Margin:0;width:580px">
                    <table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
                      <tr style="border-collapse:collapse">
-                      <td align="center" style="padding:0;Margin:0;padding-top:5px;padding-bottom:10px"><h5 style="Margin:0;line-height:14px;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;color:#666666">Contact us: <a target="_blank" href="tel:123456789" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#666666;font-size:12px">123456789</a> | <a target="_blank" href="mailto:your@mail.com" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#666666;font-size:12px">your@mail.com</a></h5></td>
-                     </tr>
-                     <tr style="border-collapse:collapse">
-                      <td align="center" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;line-height:18px;color:#666666;font-size:12px">This daily newsletter was sent to <a target="_blank" href="mailto:info@name.com" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#666666;font-size:12px">info@edu.com</a> from company name because you subscribed.</p><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;line-height:18px;color:#666666;font-size:12px">If you would not like to receive this email <a target="_blank" class="unsubscribe" href="" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#666666;font-size:12px">unsubscribe here</a>.</p></td>
+                      <td align="center" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, helvetica neue, helvetica, sans-serif;line-height:18px;color:#666666;font-size:12px">This daily newsletter was sent to <a target="_blank" href="mailto:info@name.com" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#666666;font-size:12px">info@edu.com</a> from company name because you subscribed.</p><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, helvetica neue, helvetica, sans-serif;line-height:18px;color:#666666;font-size:12px">If you would not like to receive this email <a target="_blank" class="unsubscribe" href="" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#666666;font-size:12px">unsubscribe here</a>.</p></td>
                      </tr>
                    </table></td>
                  </tr>
@@ -290,7 +295,7 @@ a[x-apple-data-detectors] {
                   <td valign="top" align="center" style="padding:0;Margin:0;width:560px">
                    <table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
                      <tr style="border-collapse:collapse">
-                      <td class="es-infoblock made_with" align="center" style="padding:0;Margin:0;line-height:13px;font-size:0;color:#999999"><a target="_blank" href="https://viewstripo.email/?utm_source=templates&utm_medium=email&utm_campaign=education&utm_content=interactive_accordion" style="text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;color:#3D5CA3;font-size:11px"><img src="https://foefxli.stripocdn.email/content/guids/cab_pub_7cbbc409ec990f19c78c75bd1e06f215/images/78411525331495932.png" alt style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic" width="125" height="56"></a></td>
+                      <td class="es-infoblock made_with" align="center" style="padding:0;Margin:0;line-height:13px;font-size:0;color:#999999"></td>
                      </tr>
                    </table></td>
                  </tr>
@@ -304,29 +309,6 @@ a[x-apple-data-detectors] {
   </div>
  </body>
 </html>';
-    }
-
-    $mail = new PHPMailer(true);
-
-    try {
-        //Server settings
-        $mail->isSMTP();
-        $mail->Host = 'bulk.smtp.mailtrap.io';  
-        $mail->SMTPAuth = true;
-        $mail->Username = 'api'; 
-        $mail->Password = '13ea0591b6d0254d76ad4e739cc8f721';
-        $mail->SMTPSecure = 'tls'; 
-        $mail->Port = 587; 
-
-        //Recipients
-        $mail->setFrom('contact@kentrogell.dev', 'Mailer');
-        $mail->addAddress('knt.rogell@gmail.com', 'User'); 
-
-       
-        $mail->isHTML(true); 
-        $mail->Subject = 'Published Articles for ' . $date;
-        $mail->Body    =  $articles;
-             
 
         $mail->send();
         echo 'Message has been sent';
@@ -336,6 +318,7 @@ a[x-apple-data-detectors] {
 } else {
     echo "No articles found for today.";
 }
+    }
 
 $conn->close();
 ?>
